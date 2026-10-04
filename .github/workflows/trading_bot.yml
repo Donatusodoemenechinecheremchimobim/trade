@@ -1,0 +1,28 @@
+name: TradingView Webhook Executor
+
+# This tells GitHub to wake up when it receives an external webhook API call
+on:
+  repository_dispatch:
+    types: [tradingview_alert]
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install Libraries
+        run: pip install ccxt requests
+        
+      - name: Execute Trade
+        env:
+          # This extracts the 'action' from the TradingView JSON payload
+          TV_ACTION: ${{ github.event.client_payload.action }}
+          PHEMEX_API_ID: ${{ secrets.PHEMEX_API_ID }}
+          PHEMEX_SECRET: ${{ secrets.PHEMEX_SECRET }}
+        run: python bot.py
